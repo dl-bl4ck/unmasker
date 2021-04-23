@@ -29,9 +29,9 @@ To train the model efficiently you can edit the configurations for the model acc
 ```python
 python3 train.py --data-dir=<path-to-dataset> --use_one_dir=<int> --wandb=<int> --max_train=<int> --max_test=<int> --result_dir=<path-to-directory> ....... #TODO ADD MODE TAGS
 ```
-`--data-dir`: To locate the dataset for the model
-`--max_train`: Maximum training data to use
-`--max_test`: Maximum Testing data to use
-`--result_dir`: Path to a result directory to store the output of the model in
-`--wandb`: 1 to create and log results on wandb and 0 to not use wandb (weights and biases)
+`--data-dir`: To locate the dataset for the model </br>
+`--max_train`: Maximum training data to use </br>
+`--max_test`: Maximum Testing data to use </br>
+`--result_dir`: Path to a result directory to store the output of the model in </br>
+`--wandb`: 1 to create and log results on wandb and 0 to not use wandb (weights and biases) </br>
 #TODO ADD MORE TAGS
