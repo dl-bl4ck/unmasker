@@ -17,3 +17,21 @@ Clone the repository and cd into it
 git clone https://github.com/dl-bl4ck/unmasker.git
 cd unmasker
 ```
+
+## Install dependencies
+
+`pip -r install requirements.txt`
+
+
+## Training the model
+
+To train the model efficiently you can edit the configurations for the model according to your systems requirements and your needs using the following arguments
+```python
+python3 train.py --data-dir=<path-to-dataset> --use_one_dir=<int> --wandb=<int> --max_train=<int> --max_test=<int> --result_dir=<path-to-directory> ....... #TODO ADD MODE TAGS
+```
+`--data-dir`: To locate the dataset for the model
+`--max_train`: Maximum training data to use
+`--max_test`: Maximum Testing data to use
+`--result_dir`: Path to a result directory to store the output of the model in
+`--wandb`: 1 to create and log results on wandb and 0 to not use wandb (weights and biases)
+#TODO ADD MORE TAGS
