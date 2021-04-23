@@ -64,7 +64,7 @@ class my_loader(Dataset):
         
 def main(args):
     if args.wandb_project!="tmp":
-        wandb.init(project=args.wandb, config=args)
+        wandb.init(project=args.wandb_project, config=args)
 
     if not torch.cuda.is_available():
         raise Exception('At least one gpu must be available.')
