@@ -10,9 +10,8 @@ from PIL import Image
 import torchvision.transforms as transforms
 import torch
 import numpy as np
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from models import CompletionNetwork, ContextDiscriminator
-from losses import completion_network_loss
 import wandb
 import pickle
 from utils import (
@@ -20,72 +19,35 @@ from utils import (
     gen_hole_area,
     crop,
     sample_random_batch,
-    poisson_blend,
 )
+from dataset import masked_dataset
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir',type=str,default="./dataset/")
-parser.add_argument('--use_one_dis',type=int,default=0)
-parser.add_argument('--wandb',type=int,default=0)
-parser.add_argument('--max_train',type=int,default=32000)
-parser.add_argument('--max_test',type=int,default=3200)
+parser.add_argument('--wandb',type=str,default="tmp")
+parser.add_argument('--max_train',type=int,default=1000)
+parser.add_argument('--max_test',type=int,default=100)
 parser.add_argument('--result_dir',type=str, default="./results/")
-parser.add_argument('--data_parallel', action='store_true')
-parser.add_argument('--recursive_search', action='store_true', default=False)
 parser.add_argument('--init_model_cn', type=str, default=None)
 parser.add_argument('--init_model_cd', type=str, default=None)
 parser.add_argument('--steps_1', type=int, default=1000)
 parser.add_argument('--steps_2', type=int, default=1000)
 parser.add_argument('--steps_3', type=int, default=1000)
-parser.add_argument('--snaperiod_1', type=int, default=100)
+parser.add_argument('--snaperiod_1', type=int, default=10)
 parser.add_argument('--snaperiod_2', type=int, default=100)
 parser.add_argument('--snaperiod_3', type=int, default=100)
-parser.add_argument('--cn_input_size', type=int, default=64)
-parser.add_argument('--ld_input_size', type=int, default=32)
-parser.add_argument('--bsize', type=int, default=64)
-parser.add_argument('--bdivs', type=int, default=1)
 parser.add_argument('--num_test_completions', type=int, default=64)
-# parser.add_argument('--mpv', nargs=3, type=float, default=None)
 parser.add_argument('--alpha', type=float, default=4e-4)
+parser.add_argument('--batch_size',type=int,default=64)
 
 
-class my_loader(Dataset):
-    def __init__(self,path="",maxx=0):
-        self.normal = []
-        self.masked = []
-        # self.mpv = np.zeros(shape=(3,))
-        
-        for i in tqdm((Path(path)/'normal').glob("*.jpg")):
-            img = Image.open(i)
-            x = np.array(img) 
-
-            name = str(i).split('/')[-1]
-            x = transforms.ToTensor()(img)
-            self.normal.append(x)     
-
-            mask = Image.open(Path(path)/f"masked/{name}")
-            mask = np.array(mask) 
-            self.masked.append(transforms.ToTensor()(mask))
-
-            if len(self.masked) >= maxx:
-                break
-
-        self.normal = torch.stack(self.normal ,dim = 0)
-        self.masked = torch.stack(self.masked ,dim = 0)
-        # self.mpv /= len(self.faces)
-        
-        print(self.normal.shape,self.masked.shape)
-            
-    def __getitem__(self, idx):
-        return self.normal[idx],self.masked[idx]
-
-    def __len__(self):
-        return len(self.masked)
         
 def main(args):
    
-    if args.wandb==1:
-        wandb.init(project="unmasker", config=args)
+    if args.wandb != "tmp":
+        wandb.init(project=args.wandb, config=args)
 
     if not torch.cuda.is_available():
         raise Exception('At least one gpu must be available.')
@@ -101,12 +63,13 @@ def main(args):
     # load dataset
     
     print('loading dataset... (it may take a few minutes)')
-    train_dset = my_loader(os.path.join(args.data_dir, 'train'), args.max_train)
+    train_dset = masked_dataset(os.path.join(args.data_dir, 'train'), args.max_train)
 
-    test_dset = my_loader(os.path.join(args.data_dir, 'test'), args.max_test)
+    test_dset = masked_dataset(os.path.join(args.data_dir, 'test'), args.max_test)
+    
     train_loader = DataLoader(
         train_dset,
-        batch_size=(args.bsize // args.bdivs),
+        batch_size=(args.batch_size),
         shuffle=True)
 
     alpha = torch.tensor(
@@ -119,76 +82,70 @@ def main(args):
         model_cn.load_state_dict(torch.load(
             args.init_model_cn,
             map_location='cpu'))
-    if args.data_parallel:
-        model_cn = DataParallel(model_cn)
+    
     model_cn = model_cn.to(gpu)
+    model_cn.train()
     opt_cn = Adadelta(model_cn.parameters())
 
     # training
     # ================================================
     # Training Phase 1
     # ================================================
-    cnt_bdivs = 0
     pbar = tqdm(total=args.steps_1)
+    
+
     while pbar.n < args.steps_1:
         for i, (normal, masked) in enumerate(train_loader, 0):
             # forward
-            normal = normal.to(gpu)
-            masked = masked.to(gpu)
-            output = model_cn(masked)
-            loss = completion_network_loss(output, normal)
+            # normal = torch.autograd.Variable(normal,requires_grad=True).to(gpu)
+            # masked = torch.autograd.Variable(normal,requires_grad=True).to(gpu)
 
+            output = model_cn(masked.to(gpu))
+            loss = torch.nn.functional.mse_loss(output, normal.to(gpu))
+            
             # backward
             loss.backward()
-            cnt_bdivs += 1
-            if cnt_bdivs >= args.bdivs:
-                cnt_bdivs = 0
+            # optimize
+            opt_cn.step()
+            opt_cn.zero_grad()
 
-                # optimize
-                opt_cn.step()
-                opt_cn.zero_grad()
-                if args.wandb==1:
-                    wandb.log({"phase_1_train_loss": loss.cpu()})
-                pbar.set_description('phase 1 | train loss: %.5f' % loss.cpu())
-                pbar.update()
+            if args.wandb!="tmp":
+                wandb.log({"phase_1_train_loss": loss.cpu()})
+            pbar.set_description('phase 1 | train loss: %.5f' % loss.cpu())
+        pbar.update()
 
-                # test
-                if pbar.n % args.snaperiod_1 == 0:
-                    model_cn.eval()
-                    with torch.no_grad():
-                        normal, masked = sample_random_batch(
-                            test_dset,
-                            batch_size=args.num_test_completions)
-                        normal = normal.to(gpu)
-                        masked = masked.to(gpu)
-                        output = model_cn(masked)
-                        completed = poisson_blend(masked,output)
-                        # completed = output
-                        imgs = torch.cat((
-                            masked.cpu(),
-                            normal.cpu(),
-                            output.cpu(),
-                            completed.cpu()), dim=0)
-                        imgpath = os.path.join(
-                            args.result_dir,
-                            'phase_1',
-                            'step%d.png' % pbar.n)
-                        model_cn_path = os.path.join(
-                            args.result_dir,
-                            'phase_1',
-                            'model_cn_step%d' % pbar.n)
-                        save_image(imgs, imgpath, nrow=len(masked))
-                        if args.data_parallel:
-                            torch.save(
-                                model_cn.module.state_dict(),
-                                model_cn_path)
-                        else:
-                            torch.save(
-                                model_cn.state_dict(),
-                                model_cn_path)
-                    model_cn.train()
-                if pbar.n >= args.steps_1:
-                    break
+        # test
+        if pbar.n % args.snaperiod_1 == 0:
+            model_cn.eval()
+            with torch.no_grad():
+                normal, masked = sample_random_batch(
+                    test_dset,
+                    batch_size=args.num_test_completions)
+                normal = normal.to(gpu)
+                masked = masked.to(gpu)
+                output = model_cn(masked)
+                
+                # completed = output
+                imgs = torch.cat((
+                    masked.cpu(),
+                    normal.cpu(),
+                    output.cpu()), dim=0)
+                imgpath = os.path.join(
+                    args.result_dir,
+                    'phase_1',
+                    'step%d.png' % pbar.n)
+                model_cn_path = os.path.join(
+                    args.result_dir,
+                    'phase_1',
+                    'model_cn_step%d' % pbar.n)
+                save_image(imgs, imgpath, nrow=len(masked))
+                
+                torch.save(
+                    model_cn.state_dict(),
+                    model_cn_path)
+            model_cn.train()
+        if pbar.n >= args.steps_1:
+            break
     pbar.close()
 
     # ================================================
