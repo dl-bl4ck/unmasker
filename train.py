@@ -93,9 +93,9 @@ def main(args):
     # ================================================
     pbar = tqdm(total=args.steps_1)
     
-
-    while pbar.n < args.steps_1:
-        for i, (normal, masked) in enumerate(train_loader, 0):
+    epochs = 0
+    while epochs < args.steps_1:
+        for i, (normal, masked) in tqdm(enumerate(train_loader, 0)):
             # forward
             # normal = torch.autograd.Variable(normal,requires_grad=True).to(gpu)
             # masked = torch.autograd.Variable(normal,requires_grad=True).to(gpu)
@@ -115,38 +115,39 @@ def main(args):
         pbar.update()
 
         # test
-        if pbar.n % args.snaperiod_1 == 0:
-            model_cn.eval()
-            with torch.no_grad():
-                normal, masked = sample_random_batch(
-                    test_dset,
-                    batch_size=args.num_test_completions)
-                normal = normal.to(gpu)
-                masked = masked.to(gpu)
-                output = model_cn(masked)
-                
-                # completed = output
-                imgs = torch.cat((
-                    masked.cpu(),
-                    normal.cpu(),
-                    output.cpu()), dim=0)
-                imgpath = os.path.join(
-                    args.result_dir,
-                    'phase_1',
-                    'step%d.png' % pbar.n)
-                model_cn_path = os.path.join(
-                    args.result_dir,
-                    'phase_1',
-                    'model_cn_step%d' % pbar.n)
-                save_image(imgs, imgpath, nrow=len(masked))
-                
-                torch.save(
-                    model_cn.state_dict(),
-                    model_cn_path)
-            model_cn.train()
-        if pbar.n >= args.steps_1:
-            break
+
+        model_cn.eval()
+        with torch.no_grad():
+            normal, masked = sample_random_batch(
+                test_dset,
+                batch_size=args.num_test_completions)
+            normal = normal.to(gpu)
+            masked = masked.to(gpu)
+            output = model_cn(masked)
+            
+            # completed = output
+            imgs = torch.cat((
+                masked.cpu(),
+                normal.cpu(),
+                output.cpu()), dim=0)
+            imgpath = os.path.join(
+                args.result_dir,
+                'phase_1',
+                'step%d.png' % pbar.n)
+            model_cn_path = os.path.join(
+                args.result_dir,
+                'phase_1',
+                'model_cn_step%d' % pbar.n)
+            save_image(imgs, imgpath, nrow=len(masked))
+            
+            torch.save(
+                model_cn.state_dict(),
+                model_cn_path)
+        model_cn.train()
+        epochs += 1
     pbar.close()
+    """
+    
 
     # ================================================
     # Training Phase 2
@@ -368,6 +369,7 @@ def main(args):
     pbar.close()
     if args.wandb==1:
         wandb.finish()
+    """
 
 
 if __name__ == '__main__':
