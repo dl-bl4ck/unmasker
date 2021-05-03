@@ -41,6 +41,7 @@ parser.add_argument('--snaperiod_3', type=int, default=100)
 parser.add_argument('--num_test_completions', type=int, default=64)
 parser.add_argument('--alpha', type=float, default=4e-4)
 parser.add_argument('--batch_size',type=int,default=64)
+parser.add_argument('--learning_rate',type=float,default=0.0001)
 
 
         
@@ -85,7 +86,7 @@ def main(args):
     
     model_cn = model_cn.to(gpu)
     model_cn.train()
-    opt_cn = Adadelta(model_cn.parameters())
+    opt_cn = Adam(model_cn.parameters(),lr=args.learning_rate)
 
     # training
     # ================================================

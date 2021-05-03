@@ -13,83 +13,83 @@ class CompletionNetwork(nn.Module):
             nn.Conv2d(3, 64, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv2 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv3 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv4 = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv5 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         
         self.conv6 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         
         self.conv7 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=1, stride=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         
         self.conv8 = nn.Sequential(
             nn.ConvTranspose2d(512, 512, kernel_size=2, stride=2),
             nn.BatchNorm2d(512),
             nn.ReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         
         self.conv9 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2, padding=0),
             nn.BatchNorm2d(512),
             nn.ReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv10 = nn.Sequential(
             nn.ConvTranspose2d(1024, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
             nn.ReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv11 = nn.Sequential(
             nn.ConvTranspose2d(512, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv12 = nn.Sequential(
             nn.ConvTranspose2d(256, 64, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
         self.conv13 = nn.Sequential(
             nn.Conv2d(128, 3, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(3),
             nn.ReLU(),
-            nn.Dropout2d(0.25),
+            # nn.Dropout2d(0.25),
         )
 
     def forward(self, x):
@@ -361,10 +361,10 @@ if __name__ == "__main__":
     #             layer = nn.ConvTranspose2d(512, 512, kernel_size=k, stride=s, padding = p)(torch.Tensor(1,512,14,14))
     #             if layer.shape[2] == 28 and layer.shape[3] == 28:
     #                 print(k,s,p)
-    x_gd = torch.randn(1,3,224,224)
-    x_ld = torch.randn(1,3,96,96)
-    model = ContextDiscriminator(debug=True)
-    preds = model(x_gd=x_gd,x_ld=x_ld)
+    # x_gd = torch.randn(1,3,224,224)
+    # x_ld = torch.randn(1,3,96,96)
+    model = CompletionNetwork(debug=True)
+    preds = model(torch.Tensor(1,3,224,224))
     print(preds.shape)
 
 
