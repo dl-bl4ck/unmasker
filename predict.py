@@ -18,7 +18,7 @@ def predict(model_path, input_img):
 
     model = CompletionNetwork()
     model.load_state_dict(torch.load(model_path, map_location='cpu'))
-    img = input_img.resize((64,64))
+    img = input_img.resize((224,224))
     x = transforms.ToTensor()(img)
     x = torch.unsqueeze(x, 0)
     # print(x.shape)
