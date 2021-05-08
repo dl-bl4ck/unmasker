@@ -4,3 +4,5 @@ dataset/
 results/
 __pycache__
 dataset.zip
+.DS_Store
+
