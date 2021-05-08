@@ -2,6 +2,8 @@
 
 Given a masked face image our task is to create an approximate description of the facial features (or an unmasked face) using generative deep learning models.
 
+For further details on the Data Pre-Processing and Methodology, please refer to ```Report.pdf```
+
 #TODO ADD SAMPLE IMAGE FLOWCHART
 
 # Try out the code
@@ -62,7 +64,8 @@ Options :
 
 ## Inference
 
-Download the trained model from (here)[https://drive.google.com/file/d/15-Z5fFllPtxDWiY79cDhhte-wqOXZYrQ/view?usp=sharing]. 
+Download the trained model from [here](https://drive.google.com/file/d/15-Z5fFllPtxDWiY79cDhhte-wqOXZYrQ/view?usp=sharing)
+
 To finally test your trained model run the following command
 
 ```
