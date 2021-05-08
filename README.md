@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 ### Dataset
 
-Download the dataset from [here](https://drive.google.com/file/d/1h6Mg9RsjUIJyerOZlH4yYRQCIQ5GP0dZ/view?usp=sharing) and unzip the downloaded dataset. This will create a ```./data/``` in the root folder of the repository.  
+Download the dataset from [here](https://drive.google.com/file/d/1e5MXL-14TK8eUC7KhWgTjSm9U4xM8gxH/view?usp=sharing) and unzip the downloaded dataset. This will create a ```dataset/``` in the root folder of the repository.  
 
 ### Training
 ```bash
@@ -62,7 +62,7 @@ Options :
 
 ## Inference
 
-Download the trained model from (here)[]. 
+Download the trained model from (here)[https://drive.google.com/file/d/15-Z5fFllPtxDWiY79cDhhte-wqOXZYrQ/view?usp=sharing]. 
 To finally test your trained model run the following command
 
 ```
