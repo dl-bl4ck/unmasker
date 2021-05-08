@@ -4,6 +4,13 @@ Given a masked face image our task is to create an approximate description of th
 
 For further details on the Data Pre-Processing and Methodology, please refer to ```Report.pdf```
 
+# Generative Model
+![](unmasker.svg)
+
+PyTorch Implementation in ```models.py```
+
+# Examples
+
 | Masked               | Generated UnMasked Images |
 |----------------------|---------------------------|
 | ![](images/1_a.jpeg) | ![](images/1_b.jpeg)      |
@@ -12,7 +19,7 @@ For further details on the Data Pre-Processing and Methodology, please refer to 
 | ![](images/4_a.jpeg) | ![](images/4_b.jpeg)      |
 | ![](images/5_a.jpeg) | ![](images/5_b.jpeg)      |
 
-# Try out the code
+# Try out our trained model
 
 To test a running model of the program [https://unmasker.herokuapp.com/](https://unmasker.herokuapp.com/)
 
