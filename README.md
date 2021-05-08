@@ -89,7 +89,7 @@ Options :
 
 ## License 
 
-Copyright (c) 2021  Paras Mehan
+Copyright (c) 2021 Pragyan Mehrotra, Vrinda Narayan and Paras Mehan
 
 For license information, see [LICENSE](LICENSE) or http://mit-license.org
 
