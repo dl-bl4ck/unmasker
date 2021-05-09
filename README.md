@@ -5,7 +5,7 @@ Given a masked face image our task is to create an approximate description of th
 For further details on the Data Pre-Processing and Methodology, please refer to ```Report.pdf```
 
 # Generative Model
-![](unmasker.svg)
+![](unmasker2.svg)
 
 PyTorch Implementation in ```models.py```
 
