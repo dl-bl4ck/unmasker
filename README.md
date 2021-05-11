@@ -2,8 +2,6 @@
 
 Given a masked face image our task is to create an approximate description of the facial features (or an unmasked face) using generative deep learning models.
 
-For further details on the Data Pre-Processing and Methodology, please refer to ```Report.pdf```
-
 # Generative Model
 ![](unmasker.svg)
 
